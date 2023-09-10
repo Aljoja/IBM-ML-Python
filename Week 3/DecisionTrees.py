@@ -34,7 +34,7 @@ predict the class of a unknown patient, or to prescribe it to a new patient.
 
 "now, read data using pandas dataframe:"
 
-my_data = pd.read_csv("C:\\Users\\Media\\Desktop\\Coursera\\Machine Learning with Python - IBM\\Lab\\Week 3\\drug200.csv", delimiter=",")
+my_data = pd.read_csv("drug200.csv", delimiter=",")
 my_data[0:5]
 
 # Practice
