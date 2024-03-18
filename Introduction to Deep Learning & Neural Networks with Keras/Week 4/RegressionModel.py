@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 
 
 concrete_data = pd.read_csv('https://s3-api.us-geo.objectstorage.softlayer.net/cf-courses-data/CognitiveClass/DL0101EN/labs/data/concrete_data.csv')
@@ -43,3 +44,32 @@ def regression_model():
     # compile model
     model.compile(optimizer='adam', loss='mean_squared_error')
     return model
+
+# build the model
+model = regression_model()
+
+# fit the model - this trains and test at the same time
+model.fit(predictors_norm, target, epochs=50) #, validation_split=0.3, epochs=100, verbose=2)
+
+predicted_targets = model.predict(predictors_test)
+
+print(type(predicted_targets))
+print(type(target_test))
+print(predicted_targets.shape)
+print(target_test.shape)
+# print(predicted_targets[0:10])
+# print(target_test.head(10))
+
+# Convert pandas Series to numpy array
+target_test_array = target_test.values
+print(type(target_test_array))
+
+# Compute mean squared error
+mse = mean_squared_error(target_test_array, predicted_targets)
+
+# Optionally, you can also compute the root mean squared error (RMSE)
+rmse = np.sqrt(mse)
+
+print(mse)
+
+A = 0 
