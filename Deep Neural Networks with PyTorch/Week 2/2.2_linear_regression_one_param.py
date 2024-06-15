@@ -99,7 +99,7 @@ X = torch.arange(-3, 3, 0.1).view(-1, 1)
 f = -3 * X
 
 # Plot the line with blue
-plt.figure(1)
+plt.figure()
 plt.plot(X.numpy(), f.numpy(), label = 'f')
 plt.xlabel('x')
 plt.ylabel('y')
@@ -110,7 +110,7 @@ plt.legend()
 Y = f + 0.1 * torch.randn(X.size())
 
 # Plot the data points
-plt.figure(2)
+plt.figure()
 plt.plot(X.numpy(), Y.numpy(), 'rx', label = 'Y')
 plt.plot(X.numpy(), f.numpy(), label = 'f')
 plt.xlabel('x')
@@ -118,8 +118,8 @@ plt.ylabel('y')
 plt.legend()
 
 # Create forward function for prediction
-def forward(x):
-    return w * x
+def forward(x, W):
+    return W * x
 
 # Create the MSE (Mean Squared Error) function for evaluate the result.
 def criterion(yhat, y):
@@ -127,81 +127,100 @@ def criterion(yhat, y):
 
 # Create Learning Rate and an empty list to record the loss for each iteration
 lr = 0.1
-LOSS = []
+LOSS1 = []
+LOSS2 = []
+LOSS3 = []
 
-# Create a model parameter
-ws = [torch.tensor(-10.0, requires_grad = True),
-      torch.tensor(0.0, requires_grad = True),
-      torch.tensor(10.0, requires_grad = True)]
+# Create some model parameters
+ws = [torch.tensor(-20.0, requires_grad = True),
+      torch.tensor(-15.0, requires_grad = True),
+      torch.tensor(-10.0, requires_grad = True)]
 
+stop = [20, 15, 5]
+iter = 4
+rows, cols = 5, 2
+count = 0
 
-# Create a 'plot_diagram' object to visualize the data space and the parameter space for each iteration during training:
-# gradient_plot = plot_diagram(X, Y, w, stop = 5, go = True)
-
-
-# Define a function for train the model
+# Define loop to train the 3 models
 for w in ws:
-    def train_model(iter):
-        error = []
-        parameter = []
-        count = 1
-        for epoch in range (iter):
-            
-            # make the prediction as we learned in the last lab
-            Yhat = forward(X)
-            
-            # calculate the iteration
-            loss = criterion(Yhat,Y)
-            
-            # plot the diagram for us to have a better idea
-            # gradient_plot(Yhat, w, loss.item(), epoch)
-            
-            error.append(loss.item())
-            parameter.append(w.data)
-            n1 = str(iter) + str(2) + str(count)
-            plt.subplot(int(n1))
-            plt.plot(X, Yhat.detach().numpy())
-            plt.plot(X, Y, 'ro')
-            plt.xlabel("A")
-            # plt.ylim(-20, 20)
-            count += 1
-            n2 = str(iter) + str(2) + str(count)
-            plt.subplot(int(n2))
-            plt.title("Data Space (top) Estimated Line (bottom) Iteration " + str(epoch))
 
-            # Convert lists to PyTorch tensors
-            parameter_values = torch.arange(0, 5)
-            Loss_function = [criterion(forward(X), Y) for w.data in parameter_values] 
-            parameter_values_tensor = torch.tensor(parameter_values)
-            loss_function_tensor = torch.tensor(Loss_function)
+    error = []
+    parameter = []
+    plt.figure(figsize = (12, 10))
+    add = 1
+    count += 1
+    parameter_values = torch.arange(torch.tensor(-25.0), 20)
+    Loss_function = [criterion(forward(X, W), Y) for W in parameter_values] 
 
-            # Plot using the tensors
-            plt.plot(parameter_values_tensor.numpy(), loss_function_tensor.numpy())
-            plt.plot(parameter, error, 'ro')
-            plt.xlabel("B")
+    for epoch in range (iter):
+        
+        # make the prediction
+        Yhat = forward(X, w)
+        
+        # calculate the iteration
+        loss = criterion(Yhat,Y)
+        
+        # save the error and w
+        error.append(loss.item())
+        parameter.append(w.data)
+
+        # Left plot
+        plt.subplot(rows, cols, epoch + add)
+        plt.plot(X.detach().numpy(), Yhat.detach().numpy())
+        plt.plot(X.detach().numpy(), Y.detach().numpy(), 'ro')
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.title("Estimated line at iteration " + str(epoch))
+        # plt.ylim(-25, 20)
 
 
-            # store the loss into list
-            LOSS.append(loss.item())
-            
-            # backward pass: compute gradient of the loss with respect to all the learnable parameters
-            loss.backward()
-            
-            # updata parameters
-            w.data = w.data - lr * w.grad.data
-            
-            # zero the gradients before running the backward pass
-            w.grad.data.zero_()
 
-        # Plot the loss for each iteration
-        plt.plot(LOSS)
-        plt.tight_layout()
-        plt.xlabel("Epoch/Iterations")
-        plt.ylabel("Cost")
+        # Convert lists to PyTorch tensors
+        parameter_values_tensor = torch.tensor(parameter_values)
+        loss_function_tensor = torch.tensor(Loss_function)
+
+        # Right plot
+        # Plot using the tensors
+        plt.subplot(rows, cols, epoch + add + 1)
+        plt.plot(parameter_values_tensor.numpy(), loss_function_tensor.numpy())
+        plt.plot(parameter, error, 'ro')
+        plt.xlabel("w")
+        plt.ylabel("L(w)")
+        plt.title("Data Space Iteration " + str(epoch) + " w = " + str(w.data))
 
 
-# Give 4 iterations for training the model here.
-train_model(4)
+        # store the loss into list
+        if count == 1:
+            LOSS1.append(loss.item())
+        elif count == 2:
+            LOSS2.append(loss.item())
+        elif count == 3:
+            LOSS3.append(loss.item())
+
+        # backward pass: compute gradient of the loss with respect to all the learnable parameters
+        loss.backward()
+        
+        # updata parameters
+        w.data = w.data - lr * w.grad.data
+        
+        # zero the gradients before running the backward pass
+        w.grad.data.zero_()
+
+        # Update addition of plots
+        add += 1
+
+    plt.tight_layout()
+
+
+# Plot the loss for each iteration
+plt.figure()
+plt.plot(LOSS1, label = 'Loss $w = -20$')
+plt.plot(LOSS2, label = 'Loss $w = -15$')
+plt.plot(LOSS3, label = 'Loss $w = -10$')
+plt.tight_layout()
+plt.xlabel("Epoch/Iterations")
+plt.ylabel("Cost")
+plt.legend()
 
 
 
