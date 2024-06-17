@@ -186,7 +186,7 @@ for w in ws:
         plt.plot(parameter, error, 'ro')
         plt.xlabel("w")
         plt.ylabel("L(w)")
-        plt.title("Data Space Iteration " + str(epoch) + " w = " + str(w.data))
+        plt.title("Data Space Iteration " + str(epoch) + " w = " + str(np.around(w.item(), 2)))
 
 
         # store the loss into list
